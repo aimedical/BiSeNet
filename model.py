@@ -8,7 +8,6 @@ import torch.nn.functional as F
 import torchvision
 
 from resnet import Resnet18
-from modules.bn import InPlaceABNSync as BatchNorm2d
 
 
 class ConvBNReLU(nn.Module):
@@ -20,7 +19,7 @@ class ConvBNReLU(nn.Module):
                 stride = stride,
                 padding = padding,
                 bias = False)
-        self.bn = BatchNorm2d(out_chan)
+        self.bn = nn.BatchNorm2d(out_chan)
         self.init_weight()
 
     def forward(self, x):
@@ -60,7 +59,7 @@ class BiSeNetOutput(nn.Module):
                 wd_params.append(module.weight)
                 if not module.bias is None:
                     nowd_params.append(module.bias)
-            elif isinstance(module, BatchNorm2d):
+            elif isinstance(module, nn.BatchNorm2d):
                 nowd_params += list(module.parameters())
         return wd_params, nowd_params
 
@@ -70,7 +69,7 @@ class AttentionRefinementModule(nn.Module):
         super(AttentionRefinementModule, self).__init__()
         self.conv = ConvBNReLU(in_chan, out_chan, ks=3, stride=1, padding=1)
         self.conv_atten = nn.Conv2d(out_chan, out_chan, kernel_size= 1, bias=False)
-        self.bn_atten = BatchNorm2d(out_chan, activation='none')
+        self.bn_atten = nn.BatchNorm2d(out_chan)
         self.sigmoid_atten = nn.Sigmoid()
         self.init_weight()
 
@@ -138,7 +137,7 @@ class ContextPath(nn.Module):
                 wd_params.append(module.weight)
                 if not module.bias is None:
                     nowd_params.append(module.bias)
-            elif isinstance(module, BatchNorm2d):
+            elif isinstance(module, nn.BatchNorm2d):
                 nowd_params += list(module.parameters())
         return wd_params, nowd_params
 
@@ -172,7 +171,7 @@ class SpatialPath(nn.Module):
                 wd_params.append(module.weight)
                 if not module.bias is None:
                     nowd_params.append(module.bias)
-            elif isinstance(module, BatchNorm2d):
+            elif isinstance(module, nn.BatchNorm2d):
                 nowd_params += list(module.parameters())
         return wd_params, nowd_params
 
@@ -222,7 +221,7 @@ class FeatureFusionModule(nn.Module):
                 wd_params.append(module.weight)
                 if not module.bias is None:
                     nowd_params.append(module.bias)
-            elif isinstance(module, BatchNorm2d):
+            elif isinstance(module, nn.BatchNorm2d):
                 nowd_params += list(module.parameters())
         return wd_params, nowd_params
 
